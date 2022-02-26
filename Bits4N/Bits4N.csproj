@@ -8,6 +8,8 @@
     <AssemblyName>Bits4N</AssemblyName>
     <RootNamespace>Bits4N</RootNamespace>
     <GenerateDocumentationFile>True</GenerateDocumentationFile>
+    <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
   </PropertyGroup>
 
 </Project>

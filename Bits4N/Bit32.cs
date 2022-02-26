@@ -83,6 +83,23 @@ public sealed class Bit32 : IBitable, IByteable, IEquatable<Bit32>, IComparable<
 			bits[i] = bitable.Bits[i];
 		_int = Package();
 	}
+	/// <summary>
+	/// Создаёт объект на основе <see cref="byte">байт</see> массива.
+	/// </summary>
+	/// <param name="buffer">Байт массив.</param>
+	/// <exception cref="InvalidOperationException"></exception>
+	public Bit32(byte[] buffer)
+	{
+		if (buffer.Length > Size)
+			throw new InvalidOperationException($"{nameof(buffer)} very large");
+
+		byte[] newBuffer = new byte[Size];
+		for (int i = 0; i < buffer.Length; i++)
+			newBuffer[i] = buffer[i];
+
+		_int = BitConverter.ToInt32(newBuffer);
+		Demount();
+	}
 
 	/// <summary>
 	/// Переключает бит по индексу.

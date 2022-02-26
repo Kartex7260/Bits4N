@@ -87,6 +87,23 @@ public sealed class Bit64 : IBitable, IByteable, IEquatable<Bit64>, IComparable<
 			bits[i] = bitable.Bits[i];
 		_long = Package();
 	}
+	/// <summary>
+	/// Создаёт объект на основе <see cref="byte">байт</see> массива.
+	/// </summary>
+	/// <param name="buffer">Байт массив.</param>
+	/// <exception cref="InvalidOperationException"></exception>
+	public Bit64(byte[] buffer)
+	{
+		if (buffer.Length > Size)
+			throw new InvalidOperationException($"{nameof(buffer)} very large");
+
+		byte[] newBuffer = new byte[Size];
+		for (int i = 0; i < buffer.Length; i++)
+			newBuffer[i] = buffer[i];
+
+		_long = BitConverter.ToInt64(newBuffer);
+		Demount();
+	}
 
 	/// <summary>
 	/// Переключает бит по индексу.

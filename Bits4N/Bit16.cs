@@ -86,6 +86,23 @@ public sealed class Bit16 : IBitable, IByteable, IEquatable<Bit16>, IComparable<
 			bits[i] = bitable.Bits[i];
 		_short = Package();
 	}
+	/// <summary>
+	/// Создаёт объект на основе <see cref="byte">байт</see> массива.
+	/// </summary>
+	/// <param name="buffer">Байт массив.</param>
+	/// <exception cref="InvalidOperationException"></exception>
+	public Bit16(byte[] buffer)
+	{
+		if (buffer.Length > Size)
+			throw new InvalidOperationException($"{nameof(buffer)} very large");
+
+		byte[] newBuffer = new byte[Size];
+		for (int i = 0; i < buffer.Length; i++)
+			newBuffer[i] = buffer[i];
+
+		_short = BitConverter.ToInt16(newBuffer);
+		Demount();
+	}
 
 	/// <summary>
 	/// Переключает бит по индексу.

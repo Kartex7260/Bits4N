@@ -82,6 +82,19 @@ public sealed class Bit8 : IBitable, IByteable, IEquatable<Bit8>, IComparable<Bi
 			bits[i] = bitable.Bits[i];
 		_byte = Package();
 	}
+	/// <summary>
+	/// Создаёт объект на основе <see cref="byte">байт</see> массива.
+	/// </summary>
+	/// <param name="buffer">Байт массив.</param>
+	/// <exception cref="InvalidOperationException"></exception>
+	public Bit8(byte[] buffer)
+	{
+		if (buffer.Length > Size)
+			throw new InvalidOperationException($"{nameof(buffer)} very large");
+
+		_byte = buffer[0];
+		Demount();
+	}
 
 	/// <summary>
 	/// Переключает бит по индексу.
