@@ -69,11 +69,7 @@ public sealed class Bit64 : IBitable, IByteable, IEquatable<Bit64>, IComparable<
 		if (bits.Length > BitCount)
 			throw new InvalidOperationException("Very large bit array");
 
-		for (int i = 0; i < bits.Length; i++)
-		{
-			this.bits[i] = bits[i];
-		}
-
+		this.bits = NormalizeArray(bits, BitCount);
 		_long = Package();
 	}
 	/// <summary>
@@ -82,9 +78,7 @@ public sealed class Bit64 : IBitable, IByteable, IEquatable<Bit64>, IComparable<
 	/// <param name="bitable">Объект работающий с битами.</param>
 	public Bit64(IBitable bitable)
 	{
-		int cycle = bitable.Bits.Length >= BitCount ? BitCount : bitable.Bits.Length;
-		for (int i = cycle; i < BitCount; i++)
-			bits[i] = bitable.Bits[i];
+		bits = NormalizeArray(bitable.Bits, BitCount);
 		_long = Package();
 	}
 	/// <summary>
@@ -97,11 +91,18 @@ public sealed class Bit64 : IBitable, IByteable, IEquatable<Bit64>, IComparable<
 		if (buffer.Length > Size)
 			throw new InvalidOperationException($"{nameof(buffer)} very large");
 
-		byte[] newBuffer = new byte[Size];
-		for (int i = 0; i < buffer.Length; i++)
-			newBuffer[i] = buffer[i];
-
+		var newBuffer = NormalizeArray(buffer, Size);
 		_long = BitConverter.ToInt64(newBuffer);
+		Demount();
+	}
+	/// <summary>
+	/// Создаёт объект на основе любого <see cref="IByteable">объекта работающего с байтами</see>.
+	/// </summary>
+	/// <param name="byteable">Объект работающий с байтами.</param>
+	public Bit64(IByteable byteable)
+	{
+		var buffer = NormalizeArray(byteable.Bytes, Size);
+		_long = BitConverter.ToInt32(buffer);
 		Demount();
 	}
 
@@ -684,6 +685,16 @@ public sealed class Bit64 : IBitable, IByteable, IEquatable<Bit64>, IComparable<
 		if (isChar)
 			return 1;
 		return -1;
+	}
+	private static T[] NormalizeArray<T>(T[] ts, int maxLength)
+	{
+		if (ts.Length == BitCount)
+			return ts;
+		T[] buffer = new T[BitCount];
+		int cycle = ts.Length >= maxLength ? maxLength : ts.Length;
+		for (int i = 0; i < cycle; i++)
+			buffer[i] = ts[i];
+		return buffer;
 	}
 
 	static Bit64()

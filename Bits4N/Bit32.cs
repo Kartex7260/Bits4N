@@ -65,22 +65,16 @@ public sealed class Bit32 : IBitable, IByteable, IEquatable<Bit32>, IComparable<
 		if (bits.Length > BitCount)
 			throw new InvalidOperationException("Very large bit array");
 
-		for (int i = 0; i < bits.Length; i++)
-		{
-			this.bits[i] = bits[i];
-		}
-
+		this.bits = NormalizeArray(bits, BitCount);
 		_int = Package();
 	}
 	/// <summary>
-	/// Созаёт объект на основе любого другого <see cref="IBitable"/> объекта.
+	/// Создаёт объект на основе любого <see cref="IBitable">объекта работающего с битами</see>.
 	/// </summary>
 	/// <param name="bitable">Объект работающий с битами.</param>
 	public Bit32(IBitable bitable)
 	{
-		int cycle = bitable.Bits.Length >= BitCount ? BitCount : bitable.Bits.Length;
-		for (int i = 0; i < cycle; i++)
-			bits[i] = bitable.Bits[i];
+		bits = NormalizeArray(bitable.Bits, BitCount);
 		_int = Package();
 	}
 	/// <summary>
@@ -93,11 +87,18 @@ public sealed class Bit32 : IBitable, IByteable, IEquatable<Bit32>, IComparable<
 		if (buffer.Length > Size)
 			throw new InvalidOperationException($"{nameof(buffer)} very large");
 
-		byte[] newBuffer = new byte[Size];
-		for (int i = 0; i < buffer.Length; i++)
-			newBuffer[i] = buffer[i];
-
+		var newBuffer = NormalizeArray(buffer, Size);
 		_int = BitConverter.ToInt32(newBuffer);
+		Demount();
+	}
+	/// <summary>
+	/// Создаёт объект на основе любого <see cref="IByteable">объекта работающего с байтами</see>.
+	/// </summary>
+	/// <param name="byteable">Объект работающий с байтами.</param>
+	public Bit32(IByteable byteable)
+	{
+		var buffer = NormalizeArray(byteable.Bytes, Size);
+		_int = BitConverter.ToInt32(buffer);
 		Demount();
 	}
 
@@ -674,6 +675,16 @@ public sealed class Bit32 : IBitable, IByteable, IEquatable<Bit32>, IComparable<
 		if (isChar)
 			return 1;
 		return -1;
+	}
+	private static T[] NormalizeArray<T>(T[] ts, int maxLength)
+	{
+		if (ts.Length == BitCount)
+			return ts;
+		T[] buffer = new T[BitCount];
+		int cycle = ts.Length >= maxLength ? maxLength : ts.Length;
+		for (int i = 0; i < cycle; i++)
+			buffer[i] = ts[i];
+		return buffer;
 	}
 
 	static Bit32()

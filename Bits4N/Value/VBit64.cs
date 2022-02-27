@@ -2,117 +2,112 @@
 using System.Collections;
 using System.Text;
 
-namespace Bits4N;
+namespace Bits4N.Value;
 
 /// <summary>
 /// Класс для разбора примитивных типов на логический массив.
 /// <para>
-/// Работает с <see cref="ushort"/>, <see cref="short"/>, <see cref="char"/>
+/// Работает с <see cref="ulong"/>, <see cref="long"/>, <see cref="double"/>
 /// </para>
 /// </summary>
-public sealed class Bit16 : IBitable, IByteable, IEquatable<Bit16>, IComparable<Bit16>, IComparable, ICloneable<Bit16>, IEnumerable<bool>
+public struct VBit64 : IBitable, IByteable, IEquatable<VBit64>, IComparable<VBit64>, IComparable, ICloneable<VBit64>, IEnumerable<bool>
 {
-	private readonly bool[] bits = new bool[BitCount];
-	private short _short = 0;
+	private long _long = 0;
 
 	/// <summary>
-	/// Предоставляет <see cref="short">шорт со знаком</see> на основе логического массива.
+	/// Предоставляет <see cref="int">инт со знаком</see> на основе логического массива.
 	/// </summary>
-	public short Short => _short;
+	public long Long => _long;
 	/// <summary>
-	/// Предоставляет <see cref="ushort">Беззнаковый шорт</see> на основе логического массива.
+	/// Предоставляет <see cref="uint">беззнаковый инт</see> на основе логического массива.
 	/// </summary>
-	public ushort UShort => Convert.ToUInt16(_short);
+	public ulong ULong => Convert.ToUInt64(_long);
 	/// <summary>
-	/// Предоставляет UTF-16 символ на основе логического массива.
+	/// Предоставляет <see cref="float">число с плавающей запятой одинарной точности</see> на
+	/// основе логического массива.
 	/// </summary>
-	public char Char => Convert.ToChar(_short);
+	public double Double => Convert.ToDouble(_long);
 	/// <summary>
 	/// Предоставляет копию логического массива.
 	/// </summary>
-	public bool[] Bits => (bool[]) bits.Clone();
+	public bool[] Bits => Demount();
 	/// <summary>
 	/// Предоставляет массив байтов.
 	/// </summary>
-	public byte[] Bytes => BitConverter.GetBytes(_short);
+	public byte[] Bytes => BitConverter.GetBytes(_long);
 
 	/// <summary>
 	/// Создаёт пустой объект.
 	/// </summary>
-	public Bit16() { }
+	public VBit64() { }
 	/// <summary>
-	/// Создаёт объект на основе <see cref="short">шорта со знаком</see>.
+	/// Создаёт объект на основе <see cref="int">инта со знаком</see>.
 	/// </summary>
-	/// <param name="s">Разбираемый <see cref="short"/>.</param>
-	public Bit16(short s)
+	/// <param name="i">Разбираемый <see cref="int"/>.</param>
+	public VBit64(long i)
 	{
-		_short = s;
-		Demount();
+		_long = i;
 	}
 	/// <summary>
-	/// Создаёт объект на основе <see cref="ushort">беззнакового шорта</see>.
+	/// Создаёт объект на основе <see cref="uint">беззнакового инта</see>.
 	/// </summary>
-	/// <param name="us">Разбираемый <see cref="ushort"/>.</param>
-	public Bit16(ushort us) : this(Convert.ToInt16(us)) { }
+	/// <param name="ui">Разбираемый <see cref="uint"/>.</param>
+	public VBit64(ulong ui) : this(Convert.ToInt64(ui)) { }
 	/// <summary>
-	/// Создаёт объект на основе символа.
+	/// Создаёт объект на основе <see cref="float">числа с плавающей запятой одинарной точности</see>.
 	/// </summary>
-	/// <param name="c">UTF-8 символ.</param>
-	public Bit16(char c) : this(Convert.ToInt16(c)) { }
+	/// <param name="f">Число с плавающей запятой.</param>
+	public VBit64(double f) : this(Convert.ToInt64(f)) { }
 	/// <summary>
 	/// Создаёт объект на основе логического массива.
 	/// </summary>
 	/// <param name="bits">Логический массив.</param>
-	public Bit16(params bool[] bits)
+	public VBit64(params bool[] bits)
 	{
 		if (bits.Length > BitCount)
 			throw new InvalidOperationException("Very large bit array");
 
-		this.bits = NormalizeArray(bits, BitCount);
-		_short = Package();
+		Package(bits);
 	}
 	/// <summary>
 	/// Создаёт объект на основе любого <see cref="IBitable">объекта работающего с битами</see>.
 	/// </summary>
 	/// <param name="bitable">Объект работающий с битами.</param>
-	public Bit16(IBitable bitable)
+	public VBit64(IBitable bitable)
 	{
-		bits = NormalizeArray(bitable.Bits, BitCount);
-		_short = Package();
+		Package(bitable.Bits);
 	}
 	/// <summary>
 	/// Создаёт объект на основе <see cref="byte">байт</see> массива.
 	/// </summary>
 	/// <param name="buffer">Байт массив.</param>
 	/// <exception cref="InvalidOperationException"></exception>
-	public Bit16(byte[] buffer)
+	public VBit64(byte[] buffer)
 	{
 		if (buffer.Length > Size)
 			throw new InvalidOperationException($"{nameof(buffer)} very large");
 
-		var newBuffer = NormalizeArray(buffer, Size);
-		_short = BitConverter.ToInt16(newBuffer);
-		Demount();
+		byte[] newBuffer = NormalizeArray(buffer, Size);
+		_long = BitConverter.ToInt64(newBuffer);
 	}
 	/// <summary>
 	/// Создаёт объект на основе любого <see cref="IByteable">объекта работающего с байтами</see>.
 	/// </summary>
 	/// <param name="byteable">Объект работающий с байтами.</param>
-	public Bit16(IByteable byteable)
+	public VBit64(IByteable byteable)
 	{
-		var buffer = NormalizeArray(byteable.Bytes, Size);
-		_short = BitConverter.ToInt16(buffer);
-		Demount();
+		byte[] buffer = NormalizeArray(byteable.Bytes, Size);
+		_long = BitConverter.ToInt64(buffer);
 	}
 
 	/// <summary>
 	/// Переключает бит по индексу.
 	/// </summary>
 	/// <param name="index">Индекс переключаемого бита.</param>
-	public void Toggle(int index) => bits[index] = !bits[index];
+	public void Toggle(int index) => SetBit(index, !GetBit(index));
 
 	/// <summary>
-	/// Сравнивает два <see cref="Bit16"/> объекта.
+	/// Сравнивает два <see cref="VBit64"/> объекта.
 	/// </summary>
 	/// <param name="bb">Объект с которым идёт сравнение.</param>
 	/// <returns>
@@ -120,15 +115,28 @@ public sealed class Bit16 : IBitable, IByteable, IEquatable<Bit16>, IComparable<
 	/// <para>0 - если значения объектов одинаковые.</para>
 	/// <para>-1 - если значение родного объекта меньше</para>
 	/// </returns>
-	public int CompareTo(Bit16? bb)
+	public int CompareTo(VBit64 bb)
+	{
+		return _long.CompareTo(bb._long);
+	}
+	/// <summary>
+	/// Сравнивает два <see cref="VBit64"/> объекта.
+	/// </summary>
+	/// <param name="bb">Объект с которым идёт сравнение.</param>
+	/// <returns>
+	/// <para>1 - если значение родного объекта больше.</para>
+	/// <para>0 - если значения объектов одинаковые.</para>
+	/// <para>-1 - если значение родного объекта меньше</para>
+	/// </returns>
+	public int CompareTo(VBit64? bb)
 	{
 		if (bb is null)
 			return 1;
 
-		return _short.CompareTo(bb._short);
+		return _long.CompareTo(bb.Value._long);
 	}
 	/// <summary>
-	/// Сравнивает два <see cref="Bit16"/> объекта.
+	/// Сравнивает два <see cref="VBit64"/> объекта.
 	/// </summary>
 	/// <param name="obj">Объект с которым идёт сравнение.</param>
 	/// <returns>
@@ -140,9 +148,9 @@ public sealed class Bit16 : IBitable, IByteable, IEquatable<Bit16>, IComparable<
 	{
 		if (obj is null)
 			return 1;
-		if (obj is not Bit16 bb)
-			return _short.CompareTo(obj);
-		return _short.CompareTo(bb._short);
+		if (obj is not VBit64 bb)
+			return _long.CompareTo(obj);
+		return _long.CompareTo(bb._long);
 	}
 
 	/// <summary>
@@ -153,7 +161,19 @@ public sealed class Bit16 : IBitable, IByteable, IEquatable<Bit16>, IComparable<
 	/// <para><c>true</c> - если значения объектов равны.</para>
 	/// <para><c>false</c> - если значения объектов различаются.</para>
 	/// </returns>
-	public bool Equals(Bit16? bb)
+	public bool Equals(VBit64 bb)
+	{
+		return GetHashCode() == bb.GetHashCode();
+	}
+	/// <summary>
+	/// Сравнивает родной объект с чужим на равенство.
+	/// </summary>
+	/// <param name="bb">Объект с которым идёт сравнение.</param>
+	/// <returns>
+	/// <para><c>true</c> - если значения объектов равны.</para>
+	/// <para><c>false</c> - если значения объектов различаются.</para>
+	/// </returns>
+	public bool Equals(VBit64? bb)
 	{
 		if (bb is null)
 			return false;
@@ -169,24 +189,30 @@ public sealed class Bit16 : IBitable, IByteable, IEquatable<Bit16>, IComparable<
 	/// </returns>
 	public override bool Equals(object? obj)
 	{
-		if (obj is null || obj is not Bit16 bb)
+		if (obj is null || obj is not VBit64 bb)
 			return false;
 		return GetHashCode() == bb.GetHashCode();
 	}
 	/// <summary>
 	/// Предоставляет хэш-код объекта.
 	/// </summary>
-	public override int GetHashCode() => _short;
+	public override int GetHashCode()
+	{
+		var buffer = BitConverter.GetBytes(_long);
+		int firstHalf = BitConverter.ToInt32(buffer, 0);
+		int secondHalf = BitConverter.ToInt32(buffer, 4);
+		return HashCode.Combine(firstHalf, secondHalf);
+	}
 	/// <summary>
 	/// Конвертирует объект в строковое представление.
 	/// </summary>
 	/// <returns></returns>
 	public override string ToString()
 	{
-		StringBuilder sb = new($"{_short}: [");
+		StringBuilder sb = new($"{_long}: [");
 		for (int i = 0; i < BitCount; i++)
 		{
-			sb.Append(bits[i] ? '1' : '0');
+			sb.Append(GetBit(i) ? '1' : '0');
 			if (i < BitCount - 1)
 				sb.Append(", ");
 		}
@@ -201,7 +227,7 @@ public sealed class Bit16 : IBitable, IByteable, IEquatable<Bit16>, IComparable<
 	public IEnumerator<bool> GetEnumerator()
 	{
 		for (int i = 0; i < BitCount; i++)
-			yield return bits[i];
+			yield return GetBit(i);
 	}
 	IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
@@ -209,7 +235,7 @@ public sealed class Bit16 : IBitable, IByteable, IEquatable<Bit16>, IComparable<
 	/// Клонирует объект.
 	/// </summary>
 	/// <returns></returns>
-	public Bit16 Clone() => new(_short);
+	public VBit64 Clone() => new(_long);
 	object ICloneable.Clone() => Clone();
 
 	/// <summary>
@@ -219,15 +245,8 @@ public sealed class Bit16 : IBitable, IByteable, IEquatable<Bit16>, IComparable<
 	/// <returns></returns>
 	public bool this[Index index]
 	{
-		get => bits[index];
-		set
-		{
-			bits[index] = value;
-			if (value)
-				_short |= BITS[index];
-			else
-				_short &= RBITS[index];
-		}
+		get => GetBit(index);
+		set => SetBit(index, value);
 	}
 
 
@@ -240,7 +259,7 @@ public sealed class Bit16 : IBitable, IByteable, IEquatable<Bit16>, IComparable<
 	/// <para><c>true</c> - если значения объектов равны.</para>
 	/// <para><c>false</c> - если значения объектов различаются.</para>
 	/// </returns>
-	public static bool operator ==(Bit16? x, Bit16? y)
+	public static bool operator ==(VBit64? x, VBit64? y)
 	{
 		return Equals(x, y);
 	}
@@ -253,7 +272,7 @@ public sealed class Bit16 : IBitable, IByteable, IEquatable<Bit16>, IComparable<
 	/// <para><c>true</c> - если значения объектов различаются.</para>
 	/// <para><c>false</c> - если значения объектов равны.</para>
 	/// </returns>
-	public static bool operator !=(Bit16? x, Bit16? y)
+	public static bool operator !=(VBit64? x, VBit64? y)
 	{
 		return !Equals(x, y);
 	}
@@ -266,7 +285,7 @@ public sealed class Bit16 : IBitable, IByteable, IEquatable<Bit16>, IComparable<
 	/// <para><c>true</c> - если значение первого объекта меньше значения второго объекта.</para>
 	/// <para><c>false</c> - если значение первого объекта равно или больше значения второго объекта.</para>
 	/// </returns>
-	public static bool operator <(Bit16? x, Bit16? y)
+	public static bool operator <(VBit64? x, VBit64? y)
 	{
 		var result = Compare(y, x);
 		return result > 0;
@@ -280,7 +299,7 @@ public sealed class Bit16 : IBitable, IByteable, IEquatable<Bit16>, IComparable<
 	/// <para><c>true</c> - если значение первого объекта больше значения второго объекта.</para>
 	/// <para><c>false</c> - если значение первого объекта равно или меньше значения второго объекта.</para>
 	/// </returns>
-	public static bool operator >(Bit16? x, Bit16? y)
+	public static bool operator >(VBit64? x, VBit64? y)
 	{
 		var result = Compare(x, y);
 		return result > 0;
@@ -294,7 +313,7 @@ public sealed class Bit16 : IBitable, IByteable, IEquatable<Bit16>, IComparable<
 	/// <para><c>true</c> - если значение первого объекта равно или больше значения второго объекта.</para>
 	/// <para><c>false</c> - если значение первого объекта меньше значения второго объекта.</para>
 	/// </returns>
-	public static bool operator >=(Bit16? x, Bit16? y)
+	public static bool operator >=(VBit64? x, VBit64? y)
 	{
 		var result = Compare(x, y);
 		return result >= 0;
@@ -308,7 +327,7 @@ public sealed class Bit16 : IBitable, IByteable, IEquatable<Bit16>, IComparable<
 	/// <para><c>true</c> - если значение первого объекта равно или меньше значения второго объекта.</para>
 	/// <para><c>false</c> - если значение первого объекта больше значения второго объекта.</para>
 	/// </returns>
-	public static bool operator <=(Bit16? x, Bit16? y)
+	public static bool operator <=(VBit64? x, VBit64? y)
 	{
 		var result = Compare(y, x);
 		return result >= 0;
@@ -319,9 +338,9 @@ public sealed class Bit16 : IBitable, IByteable, IEquatable<Bit16>, IComparable<
 	/// </summary>
 	/// <param name="x">Отицаемый объект.</param>
 	/// <returns>Новый отрицательный к текущему объект</returns>
-	public static Bit16 operator !(Bit16 x)
+	public static VBit64 operator !(VBit64 x)
 	{
-		var result = new Bit16();
+		var result = new VBit64();
 		for (int i = 0; i < BitCount; i++)
 			result[i] = !x[i];
 		return result;
@@ -331,7 +350,7 @@ public sealed class Bit16 : IBitable, IByteable, IEquatable<Bit16>, IComparable<
 	/// </summary>
 	/// <param name="x">отрицаемый объект.</param>
 	/// <returns>Новый отрицательный к текущему объект</returns>
-	public static Bit16 operator ~(Bit16 x)
+	public static VBit64 operator ~(VBit64 x)
 	{
 		return !x;
 	}
@@ -341,9 +360,9 @@ public sealed class Bit16 : IBitable, IByteable, IEquatable<Bit16>, IComparable<
 	/// <param name="x">Первый объект.</param>
 	/// <param name="y">Второй объект.</param>
 	/// <returns>Новый объект созданный на базе вычесление логического ИЛИ двух операндов.</returns>
-	public static Bit16 operator |(Bit16 x, Bit16 y)
+	public static VBit64 operator |(VBit64 x, VBit64 y)
 	{
-		var result = new Bit16();
+		var result = new VBit64();
 		for (int i = 0; i < BitCount; i++)
 			result[i] = x[i] | y[i];
 		return result;
@@ -354,9 +373,9 @@ public sealed class Bit16 : IBitable, IByteable, IEquatable<Bit16>, IComparable<
 	/// <param name="x">Первый объект.</param>
 	/// <param name="y">Второй объект.</param>
 	/// <returns>Новый объект созданный на базе вычесление логического И двух операндов.</returns>
-	public static Bit16 operator &(Bit16 x, Bit16 y)
+	public static VBit64 operator &(VBit64 x, VBit64 y)
 	{
-		var result = new Bit16();
+		var result = new VBit64();
 		for (int i = 0; i < BitCount; i++)
 			result[i] = x[i] & y[i];
 		return result;
@@ -367,9 +386,9 @@ public sealed class Bit16 : IBitable, IByteable, IEquatable<Bit16>, IComparable<
 	/// <param name="x">Первый объект.</param>
 	/// <param name="y">Второй объект.</param>
 	/// <returns>Новый объект созданный на базе вычесление логического исключения ИЛИ двух операндов.</returns>
-	public static Bit16 operator ^(Bit16 x, Bit16 y)
+	public static VBit64 operator ^(VBit64 x, VBit64 y)
 	{
-		var result = new Bit16();
+		var result = new VBit64();
 		for (int i = 0; i < BitCount; i++)
 			result[i] = x[i] ^ y[i];
 		return result;
@@ -377,174 +396,182 @@ public sealed class Bit16 : IBitable, IByteable, IEquatable<Bit16>, IComparable<
 
 
 	/// <summary>
-	/// Неявное преобразование логического массива в <see cref="Bit16"/>.
+	/// Неявное преобразование логического массива в <see cref="VBit64"/>.
 	/// </summary>
 	/// <param name="x"></param>
-	public static implicit operator Bit16(bool[] x) => new(x);
+	public static implicit operator VBit64(bool[] x) => new(x);
 	/// <summary>
-	/// Неявное преобразование <see cref="byte">беззнакового байта</see> в <see cref="Bit16"/>.
+	/// Неявное преобразование <see cref="byte">беззнакового байта</see> в <see cref="VBit64"/>.
 	/// </summary>
 	/// <param name="x"></param>
-	public static implicit operator Bit16(byte x) => new(x);
+	public static implicit operator VBit64(byte x) => new(x);
 	/// <summary>
-	/// Неявное преобразование <see cref="sbyte">байта со знаком</see> в <see cref="Bit16"/>.
+	/// Неявное преобразование <see cref="sbyte">байта со знаком</see> в <see cref="VBit64"/>.
 	/// </summary>
 	/// <param name="x"></param>
-	public static implicit operator Bit16(sbyte x) => new(x);
+	public static implicit operator VBit64(sbyte x) => new(x);
 	/// <summary>
-	/// Неявное преобразование <see cref="char">символа</see> в <see cref="Bit16"/>.
+	/// Неявное преобразование <see cref="char">символа</see> в <see cref="VBit64"/>.
 	/// </summary>
 	/// <param name="x"></param>
-	public static implicit operator Bit16(char x) => new(x);
+	public static implicit operator VBit64(char x) => new(x);
 	/// <summary>
-	/// Неявное преобразование <see cref="short"/> в <see cref="Bit16"/>.
+	/// Неявное преобразование <see cref="short"/> в <see cref="VBit64"/>.
 	/// </summary>
 	/// <param name="x"></param>
-	public static implicit operator Bit16(short x) => new(x);
+	public static implicit operator VBit64(short x) => new(x);
 	/// <summary>
-	/// Неявное преобразование <see cref="ushort"/> в <see cref="Bit16"/>.
+	/// Неявное преобразование <see cref="ushort"/> в <see cref="VBit64"/>.
 	/// </summary>
 	/// <param name="x"></param>
-	public static implicit operator Bit16(ushort x) => new(x);
+	public static implicit operator VBit64(ushort x) => new(x);
+	/// <summary>
+	/// Неявное преобразование <see cref="int"/> в <see cref="VBit64"/>.
+	/// </summary>
+	/// <param name="x"></param>
+	public static implicit operator VBit64(int x) => new(x);
+	/// <summary>
+	/// Неявное преобразование <see cref="uint"/> в <see cref="VBit64"/>.
+	/// </summary>
+	/// <param name="x"></param>
+	public static implicit operator VBit64(uint x) => new(x);
 
 	/// <summary>
-	/// Явное преобразование <see cref="int"/> в <see cref="Bit16"/>.
+	/// Явное преобразование <see cref="long"/> в <see cref="VBit64"/>.
 	/// </summary>
 	/// <param name="x"></param>
-	public static explicit operator Bit16(int x) => new(Convert.ToByte(x));
+	public static explicit operator VBit64(long x) => new(x);
 	/// <summary>
-	/// Явное преобразование <see cref="uint"/> в <see cref="Bit16"/>.
+	/// Явное преобразование <see cref="ulong"/> в <see cref="VBit64"/>.
 	/// </summary>
 	/// <param name="x"></param>
-	public static explicit operator Bit16(uint x) => new(Convert.ToByte(x));
+	public static explicit operator VBit64(ulong x) => new(Convert.ToByte(x));
 	/// <summary>
-	/// Явное преобразование <see cref="long"/> в <see cref="Bit16"/>.
+	/// Явное преобразование <see cref="float"/> в <see cref="VBit64"/>.
 	/// </summary>
 	/// <param name="x"></param>
-	public static explicit operator Bit16(long x) => new(Convert.ToByte(x));
+	public static explicit operator VBit64(float x) => new(Convert.ToByte(x));
 	/// <summary>
-	/// Явное преобразование <see cref="ulong"/> в <see cref="Bit16"/>.
+	/// Явное преобразование <see cref="double"/> в <see cref="VBit64"/>.
 	/// </summary>
 	/// <param name="x"></param>
-	public static explicit operator Bit16(ulong x) => new(Convert.ToByte(x));
+	public static explicit operator VBit64(double x) => new(Convert.ToByte(x));
 	/// <summary>
-	/// Явное преобразование <see cref="float"/> в <see cref="Bit16"/>.
+	/// Явное преобразование <see cref="decimal"/> в <see cref="VBit64"/>.
 	/// </summary>
 	/// <param name="x"></param>
-	public static explicit operator Bit16(float x) => new(Convert.ToByte(x));
-	/// <summary>
-	/// Явное преобразование <see cref="double"/> в <see cref="Bit16"/>.
-	/// </summary>
-	/// <param name="x"></param>
-	public static explicit operator Bit16(double x) => new(Convert.ToByte(x));
-	/// <summary>
-	/// Явное преобразование <see cref="decimal"/> в <see cref="Bit16"/>.
-	/// </summary>
-	/// <param name="x"></param>
-	public static explicit operator Bit16(decimal x) => new(Convert.ToByte(x));
+	public static explicit operator VBit64(decimal x) => new(Convert.ToByte(x));
 
 	/// <summary>
-	/// Неявное преобразование <see cref="Bit8"/> в <see cref="Bit16"/>.
+	/// Неявное преобразование <see cref="Bit8"/> в <see cref="VBit64"/>.
 	/// </summary>
 	/// <param name="x"></param>
-	public static implicit operator Bit16(Bit8 x) => new(x.Byte);
+	public static implicit operator VBit64(Bit8 x) => new(x.Byte);
 	/// <summary>
-	/// Явное преобразование <see cref="Bit32"/> в <see cref="Bit16"/>.
+	/// Неявное преобразование <see cref="Bit16"/> в <see cref="VBit64"/>.
 	/// </summary>
 	/// <param name="x"></param>
-	public static explicit operator Bit16(Bit32 x) => new(Convert.ToInt16(x.Int));
+	public static implicit operator VBit64(Bit16 x) => new(x.Short);
 	/// <summary>
-	/// Явное преобразование <see cref="Bit64"/> в <see cref="Bit16"/>
+	/// Неявное преобразование <see cref="Bit32"/> в <see cref="VBit64"/>.
 	/// </summary>
 	/// <param name="x"></param>
-	public static explicit operator Bit16(Bit64 x) => new(Convert.ToInt16(x.Long));
+	public static implicit operator VBit64(Bit32 x) => new(x.Int);
 
 
 	/// <summary>
-	/// Явное преобразование <see cref="Bit16"/> в <see cref="byte">беззнаковый байт</see>.
+	/// Явное преобразование <see cref="VBit64"/> в <see cref="byte">беззнаковый байт</see>.
 	/// </summary>
 	/// <param name="x"></param>
-	public static explicit operator byte(Bit16 x) => Convert.ToByte(x.Short);
+	public static explicit operator byte(VBit64 x) => Convert.ToByte(x.Long);
 	/// <summary>
-	/// Явное преобразование <see cref="Bit16"/> в <see cref="sbyte">байт со знаком</see>.
+	/// Явное преобразование <see cref="VBit64"/> в <see cref="sbyte">байт со знаком</see>.
 	/// </summary>
 	/// <param name="x"></param>
-	public static explicit operator sbyte(Bit16 x) => Convert.ToSByte(x.UShort);
+	public static explicit operator sbyte(VBit64 x) => Convert.ToSByte(x.ULong);
+	/// <summary>
+	/// Явное преобразование <see cref="VBit64"/> в <see cref="char">UTF-16 символ</see>.
+	/// </summary>
+	/// <param name="x"></param>
+	public static explicit operator char(VBit64 x) => Convert.ToChar(x.Long);
+	/// <summary>
+	/// Явное преобразование <see cref="VBit64"/> в <see cref="short"/>.
+	/// </summary>
+	/// <param name="x"></param>
+	public static explicit operator short(VBit64 x) => Convert.ToInt16(x.Long);
+	/// <summary>
+	/// Явное преобразование <see cref="VBit64"/> в <see cref="ushort"/>.
+	/// </summary>
+	/// <param name="x"></param>
+	public static explicit operator ushort(VBit64 x) => Convert.ToUInt16(x.Long);
+	/// <summary>
+	/// Неявное преобразование <see cref="VBit64"/> в <see cref="int"/>.
+	/// </summary>
+	/// <param name="x"></param>
+	public static explicit operator int(VBit64 x) => Convert.ToInt32(x.Long);
+	/// <summary>
+	/// Неявное преобразование <see cref="VBit64"/> в <see cref="uint"/>.
+	/// </summary>
+	/// <param name="x"></param>
+	public static explicit operator uint(VBit64 x) => Convert.ToUInt32(x.Long);
+	/// <summary>
+	/// Неявное преобразование <see cref="VBit64"/> в <see cref="float"/>.
+	/// </summary>
+	/// <param name="x"></param>
+	public static explicit operator float(VBit64 x) => Convert.ToSingle(x.Long);
 
 	/// <summary>
-	/// Неявное преобразование <see cref="Bit16"/> в логический массив.
+	/// Неявное преобразование <see cref="VBit64"/> в логический массив.
 	/// </summary>
 	/// <param name="x"></param>
-	public static implicit operator bool[](Bit16 x) => x.Bits;
+	public static implicit operator bool[](VBit64 x) => x.Bits;
 	/// <summary>
-	/// Неявное преобразование <see cref="Bit16"/> в <see cref="char">UTF-16 символ</see>.
+	/// Неявное преобразование <see cref="VBit64"/> в <see cref="long"/>.
 	/// </summary>
 	/// <param name="x"></param>
-	public static implicit operator char(Bit16 x) => x.Char;
+	public static implicit operator long(VBit64 x) => x.Long;
 	/// <summary>
-	/// Неявное преобразование <see cref="Bit16"/> в <see cref="short"/>.
+	/// Неявное преобразование <see cref="VBit64"/> в <see cref="ulong"/>.
 	/// </summary>
 	/// <param name="x"></param>
-	public static implicit operator short(Bit16 x) => x.Short;
+	public static implicit operator ulong(VBit64 x) => x.ULong;
 	/// <summary>
-	/// Неявное преобразование <see cref="Bit16"/> в <see cref="ushort"/>.
+	/// Неявное преобразование <see cref="VBit64"/> в <see cref="double"/>.
 	/// </summary>
 	/// <param name="x"></param>
-	public static implicit operator ushort(Bit16 x) => x.UShort;
+	public static implicit operator double(VBit64 x) => x.Double;
 	/// <summary>
-	/// Неявное преобразование <see cref="Bit16"/> в <see cref="int"/>.
+	/// Неявное преобразование <see cref="VBit64"/> в <see cref="decimal"/>.
 	/// </summary>
 	/// <param name="x"></param>
-	public static implicit operator int(Bit16 x) => x.Short;
-	/// <summary>
-	/// Неявное преобразование <see cref="Bit16"/> в <see cref="uint"/>.
-	/// </summary>
-	/// <param name="x"></param>
-	public static implicit operator uint(Bit16 x) => x.UShort;
-	/// <summary>
-	/// Неявное преобразование <see cref="Bit16"/> в <see cref="long"/>.
-	/// </summary>
-	/// <param name="x"></param>
-	public static implicit operator long(Bit16 x) => x.Short;
-	/// <summary>
-	/// Неявное преобразование <see cref="Bit16"/> в <see cref="ulong"/>.
-	/// </summary>
-	/// <param name="x"></param>
-	public static implicit operator ulong(Bit16 x) => x.UShort;
-	/// <summary>
-	/// Неявное преобразование <see cref="Bit16"/> в <see cref="float"/>.
-	/// </summary>
-	/// <param name="x"></param>
-	public static implicit operator float(Bit16 x) => Convert.ToSingle(x.Short);
-	/// <summary>
-	/// Неявное преобразование <see cref="Bit16"/> в <see cref="double"/>.
-	/// </summary>
-	/// <param name="x"></param>
-	public static implicit operator double(Bit16 x) => Convert.ToDouble(x.Short);
-	/// <summary>
-	/// Неявное преобразование <see cref="Bit16"/> в <see cref="decimal"/>.
-	/// </summary>
-	/// <param name="x"></param>
-	public static implicit operator decimal(Bit16 x) => Convert.ToDecimal(x.Short);
+	public static implicit operator decimal(VBit64 x) => Convert.ToDecimal(x.Long);
 
 	#region private
-	private short Package()
+	private bool GetBit(Index index)
 	{
-		short result = 0;
-
-		for (int i = 0; i < BitCount; i++)
-			if (bits[i]) result |= BITS[i];
-
-		return result;
+		long clearLong = _long & BITS[index];
+		return clearLong == BITS[index];
 	}
-	private void Demount()
+	private void SetBit(Index index, bool value)
 	{
+		if (value)
+			_long |= BITS[index];
+		else
+			_long &= RBITS[index];
+	}
+	private void Package(bool[] bits)
+	{
+		_long = 0;
+		int cycle = bits.Length >= BitCount ? BitCount : bits.Length;
+		for (int i = 0; i < cycle; i++)
+			if (bits[i]) _long |= BITS[i];
+	}
+	private bool[] Demount()
+	{
+		bool[] bits = new bool[BitCount];
 		for (int i = 0; i < BitCount; i++)
-		{
-			short clearShort = (short) (_short & BITS[i]);
-			if (clearShort == BITS[i])
-				bits[i] = true;
-		}
+			bits[i] = GetBit(i);
+		return bits;
 	}
 	#endregion
 
@@ -554,27 +581,35 @@ public sealed class Bit16 : IBitable, IByteable, IEquatable<Bit16>, IComparable<
 	/// Количество битов.
 	/// <para>Размер логического массива.</para>
 	/// </summary>
-	public const int BitCount = 16;
+	public const int BitCount = 64;
 	/// <summary>
 	/// Размер (в байтах) хранимого значения.
 	/// </summary>
-	public const int Size = 2;
+	public const int Size = 8;
 	/// <summary>
 	/// Максимально возможно значение.
 	/// </summary>
-	public const ushort MaxValue = ushort.MaxValue;
+	public const ulong MaxValue = ulong.MaxValue;
 	/// <summary>
 	/// Минимально возможное значение.
 	/// </summary>
-	public const short MinValue = short.MinValue;
+	public const long MinValue = long.MinValue;
+	/// <summary>
+	/// Максимальное значение для альтернативного типа данных.
+	/// </summary>
+	public const double AltMaxValue = double.MaxValue;
+	/// <summary>
+	/// Минимальное значение для альтернативного типа данных.
+	/// </summary>
+	public const double AltMinValue = double.MinValue;
 
 	/// <summary>
-	/// Парсинг строкового значения в <see cref="Bit16"/>.
+	/// Парсинг строкового значения в <see cref="VBit64"/>.
 	/// </summary>
 	/// <param name="line">Парсируемая строка.</param>
 	/// <returns></returns>
 	/// <exception cref="InvalidOperationException">Если строка имеет неправильный формат.</exception>
-	public static Bit16 Parse(string line)
+	public static VBit64 Parse(string line)
 	{
 		bool[] result = new bool[BitCount];
 		int cycle = line.Length >= BitCount ? BitCount : line.Length;
@@ -591,7 +626,7 @@ public sealed class Bit16 : IBitable, IByteable, IEquatable<Bit16>, IComparable<
 		return new(result);
 	}
 	/// <summary>
-	/// Попытка отпарсить строковое значение в <see cref="Bit16"/>
+	/// Попытка отпарсить строковое значение в <see cref="VBit64"/>
 	/// </summary>
 	/// <param name="line">Парсируемая строка.</param>
 	/// <param name="result">Выходной результат парсинга.</param>
@@ -599,7 +634,7 @@ public sealed class Bit16 : IBitable, IByteable, IEquatable<Bit16>, IComparable<
 	/// <para><c>true</c> - если парсинг прошёл успешно.</para>
 	/// <para><c>false</c> - если парсинг не удался.</para>
 	/// </returns>
-	public static bool TryParse(string line, out Bit16 result)
+	public static bool TryParse(string line, out VBit64 result)
 	{
 		result = new bool[BitCount];
 		int cycle = line.Length >= BitCount ? BitCount : line.Length;
@@ -626,7 +661,7 @@ public sealed class Bit16 : IBitable, IByteable, IEquatable<Bit16>, IComparable<
 	/// <para><c>равно 0</c> - если значение первого объекта равно значению второго объекта.</para>
 	/// <para><c>1 и больше</c> - если значение первого объекта больше значения второго объекта.</para>
 	/// </returns>
-	public static int Compare(Bit16? x, Bit16? y)
+	public static int Compare(VBit64? x, VBit64? y)
 	{
 		if (x is null && y is null)
 			return 0;
@@ -635,7 +670,7 @@ public sealed class Bit16 : IBitable, IByteable, IEquatable<Bit16>, IComparable<
 		if (x is null && y is not null)
 			return -1;
 
-		return x!._short.CompareTo(y!._short);
+		return x!.Value._long.CompareTo(y!.Value._long);
 	}
 	/// <summary>
 	/// Сравнивает два объекта на равенство значений.
@@ -646,7 +681,7 @@ public sealed class Bit16 : IBitable, IByteable, IEquatable<Bit16>, IComparable<
 	/// <para><c>true</c> - если значения объектов равны.</para>
 	/// <para><c>false</c> - если значения объектов различаются.</para>
 	/// </returns>
-	public static bool Equals(Bit16? x, Bit16? y)
+	public static bool Equals(VBit64? x, VBit64? y)
 	{
 		if (x is null && y is null)
 			return true;
@@ -658,8 +693,8 @@ public sealed class Bit16 : IBitable, IByteable, IEquatable<Bit16>, IComparable<
 
 	#region static private
 
-	private static readonly short[] BITS;
-	private static readonly short[] RBITS;
+	private static readonly long[] BITS;
+	private static readonly long[] RBITS;
 
 	private static int ValideChar(char c)
 	{
@@ -682,9 +717,9 @@ public sealed class Bit16 : IBitable, IByteable, IEquatable<Bit16>, IComparable<
 		return buffer;
 	}
 
-	static Bit16()
+	static VBit64()
 	{
-		short[] bs = new short[BitCount];
+		long[] bs = new long[BitCount];
 		short tmp = 1;
 		for (int i = 0; i < BitCount; i++)
 		{
@@ -693,9 +728,9 @@ public sealed class Bit16 : IBitable, IByteable, IEquatable<Bit16>, IComparable<
 		}
 		BITS = bs;
 
-		short[] rbs = new short[BitCount];
+		long[] rbs = new long[BitCount];
 		for (int i = 0; i < BitCount; i++)
-			rbs[i] = (short) ~BITS[i];
+			rbs[i] = ~BITS[i];
 		RBITS = rbs;
 	}
 	#endregion

@@ -17,6 +17,9 @@
     <Copyright>Kartex</Copyright>
     <PackageTags>Bits</PackageTags>
     <PackageReadmeFile>README.md</PackageReadmeFile>
+    <RepositoryUrl>https://github.com/Kartex7260/Bits4N</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <PackageReleaseNotes>Append Bit 8 / 16 / 32 / 64</PackageReleaseNotes>
   </PropertyGroup>
 
   <ItemGroup>
